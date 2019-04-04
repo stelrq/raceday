@@ -1,0 +1,77 @@
+/**
+ * 
+ */
+package view;
+
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import model.LeaderBoardMessage;
+import model.Participant;
+
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_PARTICIPANTS_LOADED;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_RACER_PASSED;
+/**
+ * @author sterling
+ *
+ */
+public class Leaderboard extends JPanel implements PropertyChangeListener {
+
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = 5184740209901199236L;
+    /** Horizontal size of the buttons. */
+    private static final Dimension BUTTON_DIMENSION = new Dimension(150, 50);
+    /** The maximum number of racers. */
+    private static int MAX_RACERS = 10;
+    /** Spacing between buttons. */
+    private static final int SPACING = 5;
+    private static final int BUTTON_WIDTH = 150;
+    private static final int BUTTON_HEIGHT = 25;
+    
+    public Leaderboard() {
+        super();
+        setLayout(new GridLayout(MAX_RACERS, 1, SPACING, SPACING));
+        JLabel j = new JLabel();
+        j.setPreferredSize(new Dimension(BUTTON_WIDTH, 5));
+        add(j);
+    }
+    
+    private void fillLeaderBoard(final HashMap<Integer, Participant> myRacers) {
+
+        for (Integer i : myRacers.keySet()) {
+            final Participant p = myRacers.get(i);
+            final JButton j = new JButton(p.toString());
+            j.setPreferredSize(BUTTON_DIMENSION);
+            add(j);
+        }   
+        revalidate();
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+        if (theEvent.getPropertyName().contentEquals(PROPERTY_PARTICIPANTS_LOADED)) {
+                @SuppressWarnings("unchecked")
+                HashMap<Integer, Participant> h
+                    = (HashMap<Integer, Participant>) theEvent.getNewValue(); //PROPERTY_PARTICIPANTS_LOADED will always pass a HashMap<Integer, Participant> for its new value
+                fillLeaderBoard(h);
+        } else if (theEvent.getPropertyName().contentEquals(PROPERTY_RACER_PASSED)) {
+        
+        }
+    }
+
+
+}

@@ -1,0 +1,22 @@
+package model;
+
+public class LeaderBoardMessage extends AbstractMessage implements Message {
+    int [] myRacerIDs;
+    public LeaderBoardMessage(int theTimeStamp, int [] theRacerIDs) {
+        super(theTimeStamp);
+        myRacerIDs = theRacerIDs;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(STRING_BUILDER_SIZE);
+        sb.append("Leader Board Message:");
+        sb.append(getTimeStamp());
+        for (int i : myRacerIDs) {
+            sb.append(":Racer ID:");
+            sb.append(i);
+        }
+        return sb.toString();
+    }
+
+}

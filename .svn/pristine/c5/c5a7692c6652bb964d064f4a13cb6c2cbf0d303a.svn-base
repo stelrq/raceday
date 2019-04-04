@@ -1,0 +1,113 @@
+package model;
+
+import controller.TimePanel;
+
+/**
+ * Stores the information from a race file header.
+ * @author sterling
+ * @version Winter 2019
+ */
+public class FileHeader {
+    /** The name of the race. */
+    private String myName;
+    /** The shape of the track */
+    private String myGeometry;
+    /** The width of the track. */
+    private int myWidth;
+    /** The height of the track */
+    private int myHeight;
+    /** The distance of a race lap. */
+    private int myDistance;
+    /** The total race time in milliseconds. */
+    private int myTime;
+    /** Number of racers in this race. */
+    private int myRacerCount;
+    /** The number of lines in the header */
+    public static final int HEADER_LENGTH = 7;
+    /**
+     * Constructs a header based on the passed in array. 
+     * Assumes that the array is in the order specified by the DDS
+     * @param theHeader an array that contains the header from the race file
+     */
+    public FileHeader(String [] theHeader) {
+        int i = 0;
+        myName = removeTitle(theHeader[i]);
+        i++;
+        myGeometry = removeTitle(theHeader[i]);
+        i++;
+        myWidth = removeAndParse(theHeader[i]);
+        i++;
+        myHeight = removeAndParse(theHeader[i]);
+        i++;
+        myDistance = removeAndParse(theHeader[i]);
+        i++;
+        myTime = removeAndParse(theHeader[i]);
+        i++;
+        myRacerCount = removeAndParse(theHeader[i]);
+        
+    }
+    private String removeTitle(final String theLine) { 
+        return theLine.substring(theLine.indexOf(RaceModel.DELIMITER_C) + 1);
+    }
+    private int removeAndParse(final String theLine) {
+        return Integer.parseInt(removeTitle(theLine));
+    }
+
+    /**
+     * @return the myName
+     */
+    public String getRaceName() {
+        return myName;
+    }
+    /**
+     * @return the myGeometry
+     */
+    public String getRaceGeometry() {
+        return myGeometry;
+    }
+    /**
+     * @return the myWidth
+     */
+    public int getTrackWidth() {
+        return myWidth;
+    }
+    /**
+     * @return the myHeight
+     */
+    public int getTrackHeight() {
+        return myHeight;
+    }
+    /**
+     * @return the myDistance
+     */
+    public int getTrackDistance() {
+        return myDistance;
+    }
+    /**
+     * @return the myTime
+     */
+    public int getRaceTime() {
+        return myTime;
+    }
+    /**
+     * @return the myRacerCount
+     */
+    public int getRacerCount() {
+        return myRacerCount;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(myName);
+        sb.append("\n");
+        sb.append("Track Type: ");
+        sb.append(myGeometry);
+        sb.append("\n");
+        sb.append("Total Time: ");
+        sb.append(TimePanel.formatTime(myTime));
+        sb.append("\n");
+        sb.append("Lap Distance: ");
+        sb.append(myDistance);
+        return sb.toString();
+    }
+}

@@ -1,0 +1,43 @@
+package model;
+
+public class TelemetryMessage extends AbstractMessage implements Message {
+    private int myRacerID;
+    private double myDistance;
+    private int myLap;
+    
+    public TelemetryMessage(int theTimeStamp, int theRacerID, double theDistance, int theLap) {
+        super(theTimeStamp);
+        myRacerID = theRacerID;
+        myDistance = theDistance;
+        myLap = theLap;
+    }
+    public int getRacerID() {
+        return myRacerID;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(STRING_BUILDER_SIZE);
+        sb.append("Telemetry Message at Time:");
+        sb.append(getTimeStamp());
+        sb.append(":Racer ID:");
+        sb.append(myRacerID);
+        sb.append(":Distance:");
+        sb.append(myDistance);
+        sb.append(":Lap:");
+        sb.append(myLap);
+        
+        return sb.toString();
+    }
+    /**
+     * @return the myDistance
+     */
+    public double getDistance() {
+        return myDistance;
+    }
+    /**
+     * @return the myLap
+     */
+    public int getLap() {
+        return myLap;
+    }
+}

@@ -1,0 +1,155 @@
+package view;
+
+//import static model.PropertyChangeEnabledTimeControls.PROPERTY_TIME;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import model.FileHeader;
+import model.Message;
+import model.Participant;
+import model.TelemetryMessage;
+import track.VisibleRaceTrack;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_HEADER_LOADED;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_TIME;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_RACE_LOADED;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_PARTICIPANTS_LOADED;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_T_MESSAGE;
+
+/**
+ * A demo of PropertyChangeListener and track.jar. 
+ * 
+ * @author Charles Bryan
+ * @version Autumn 2015
+ */
+public class TrackPanel extends JPanel implements PropertyChangeListener {
+    
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = 8385732728740430466L;
+    
+    /** The size of the Race Track Panel. */
+    private static final Dimension TRACK_SIZE = new Dimension(500, 400);
+    
+    /** The x and y location of the Track. */
+    private static final int OFF_SET = 40;
+
+    /** The stroke width in pixels. */
+    private static final int STROKE_WIDTH = 25;
+
+    /** The size of participants moving around the track. */
+    private static final int OVAL_SIZE = 20;
+    
+    /** The visible track. */
+    private VisibleRaceTrack myTrack;
+    
+    /** The circle moving around the track. */
+    private HashMap<Integer, ParticipantView> myParticipants;
+    /** The height of the track in relation to the width. */
+    private int myHeight;
+    /** The width of the track in relation to the height. */
+    private int myWidth;
+    /** The distance around the track. */
+    private int myDistance;
+    /**
+     * Construct a Track Panel. 
+     */
+    public TrackPanel() {
+        super();
+        setPreferredSize(TRACK_SIZE);
+        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Race Track"));
+        myParticipants = new HashMap<Integer, ParticipantView>(); 
+    }
+    
+    /**
+     * Setup and layout components. 
+     */
+    private void setupComponents() {
+        final int width = (int) TRACK_SIZE.getWidth() - (OFF_SET * 2);
+        final int height =
+                        ((int) TRACK_SIZE.getWidth()  - 2 * OFF_SET) / myWidth * myHeight;
+        final int x = OFF_SET;
+        final int y = (int) TRACK_SIZE.getHeight()  / 2 - height / 2;
+
+        myTrack = new VisibleRaceTrack(x, y, width, height, myDistance);
+        
+    }
+    private void populateParticipants(HashMap<Integer, Participant> theRacers) {
+        for (Integer i : theRacers.keySet()) {
+            final Participant p = theRacers.get(i);
+            final ParticipantView v = new ParticipantView(p.getColor());
+            myParticipants.put(p.getRacerID(), v);
+            final Point2D start = myTrack.getPointAtDistance(p.getDistance());
+            v.setFrame(start.getX() - OVAL_SIZE / 2, start.getY() - OVAL_SIZE / 2, OVAL_SIZE, OVAL_SIZE);
+        }
+    }
+    
+    /**
+     * Paints the VisibleTrack with a single ellipse moving around it.
+     * 
+     * @param theGraphics The graphics context to use for painting.
+     */
+    @Override
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        final Graphics2D g2d = (Graphics2D) theGraphics;
+
+        // for better graphics display
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                             RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (myTrack != null) {
+            g2d.setPaint(Color.BLACK);
+            g2d.setStroke(new BasicStroke(STROKE_WIDTH));
+            g2d.draw(myTrack);
+        }
+        for(Integer i: myParticipants.keySet()) {
+            final ParticipantView v = myParticipants.get(i);
+            g2d.setPaint(v.getColor());
+            g2d.setStroke(new BasicStroke(1));
+            g2d.fill(v);
+        }
+    }
+
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+        if (PROPERTY_T_MESSAGE.equals(theEvent.getPropertyName())) {
+            if (theEvent.getNewValue() instanceof TelemetryMessage) {
+                final Point2D p = 
+                    myTrack.getPointAtDistance(((TelemetryMessage)
+                        theEvent.getNewValue()).getDistance());
+                            myParticipants.get(((TelemetryMessage) theEvent.getNewValue())
+                                .getRacerID()).setFrame(p.getX() - OVAL_SIZE / 2, 
+                                    p.getY() - OVAL_SIZE / 2, 
+                                        OVAL_SIZE, OVAL_SIZE);
+            repaint();
+            }
+        } else if (PROPERTY_HEADER_LOADED.equals(theEvent.getPropertyName())) {
+            myWidth = ((FileHeader) theEvent.getNewValue()).getTrackWidth();
+            myHeight = ((FileHeader) theEvent.getNewValue()).getTrackHeight();
+            myDistance = ((FileHeader) theEvent.getNewValue()).getTrackDistance();
+        } else if (PROPERTY_PARTICIPANTS_LOADED.equals(theEvent.getPropertyName())) {
+            setupComponents();
+            populateParticipants(RaceView.verifyHashMap(theEvent.getNewValue(), Participant.class));
+            repaint();
+        }
+    }
+}
+

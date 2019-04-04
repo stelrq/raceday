@@ -1,0 +1,98 @@
+package view;
+
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_PARTICIPANTS_LOADED;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.HeadlessException;
+import java.awt.geom.Ellipse2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Random;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+import controller.TimePanel;
+import model.Participant;
+import model.PropertyChangeEnabledRaceControls;
+
+public class RaceView extends JFrame implements PropertyChangeListener {
+
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = -509937030149100106L;
+    /** Title for the window. */
+    private static String VIEW_TITLE = "Race Track";
+    /** Race track for this panel. */
+    private TrackPanel myPanel;
+    /** Leaderboard to display participants */
+    private Leaderboard myLeaderboard;
+    /** Displays Race time and participant info if a participant is selected. */
+    private StatusBar myStatusBar;
+   
+    /** 
+     * Constructs a new view that listens to the passed in race.
+     * @param theRace the source of data for this display
+     */
+    public RaceView(final int theOffset, final int theVertical,
+                    final PropertyChangeEnabledRaceControls theRace) {
+        super(VIEW_TITLE);
+        this.setLocation(theOffset, theVertical);
+        initView();
+        theRace.addPropertyChangeListener(myLeaderboard);
+        theRace.addPropertyChangeListener(myPanel);
+        theRace.addPropertyChangeListener(myStatusBar);
+    }
+    /**
+     * Initializes a the view for a race, until a file is loaded it will be mostly blank.
+     */
+    private void initView() {
+        myPanel = new TrackPanel();
+        myLeaderboard = new Leaderboard();
+        myStatusBar = new StatusBar(getWidth());
+        add(myLeaderboard, BorderLayout.EAST);
+        add(myPanel, BorderLayout.CENTER);
+        add(myStatusBar, BorderLayout.SOUTH);
+        this.setVisible(true);
+        this.setResizable(false);
+        pack();
+    }
+    /**
+     * Verifies content of HashMap matches the given type.
+     */
+    public static <V> HashMap<Integer, V> verifyHashMap(Object theMap, Class<V> theValue) {
+        HashMap<Integer, V> h = new HashMap<Integer, V>();
+        HashMap<?, ?> temp = (HashMap<?, ?>) theMap;
+        for (Object o : temp.keySet()) {
+                h.put((Integer) o, theValue.cast(temp.get(o)));
+        }
+        return h;
+    }
+//    private HashMap<Integer, Ellipse2D> populateParticipants(HashMap<Integer, Participant> theRacers) {
+//        HashMap<Integer, Ellipse2D> h = new HashMap<Integer, Ellipse2D>(); 
+//        for (Integer i : theRacers.keySet()) {
+//            final Participant p = theRacers.get(i);
+//            final ParticipantView v = new ParticipantView();
+//            h.put(p.getRacerID(), v);
+//        }
+//        return h;
+//    }
+//    
+    
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+//        if (PROPERTY_PARTICIPANTS_LOADED.equals(theEvent.getPropertyName())) {
+//            @SuppressWarnings("unchecked")
+//            HashMap<Integer, Participant> h
+//                = (HashMap<Integer, Participant>) theEvent.getNewValue(); //PROPERTY_PARTICIPANTS_LOADED will always pass a HashMap<Integer, Participant> for its new value
+//            populateParticipants(h);
+//        }
+    }
+
+}

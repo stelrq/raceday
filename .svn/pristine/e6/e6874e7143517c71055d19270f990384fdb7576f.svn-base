@@ -1,0 +1,55 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.GraphicsConfiguration;
+import java.awt.HeadlessException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.JFrame;
+
+import model.PropertyChangeEnabledRaceControls;
+
+public class RaceView extends JFrame implements PropertyChangeListener{
+
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = -509937030149100106L;
+    /** Title for the window. */
+    private static String VIEW_TITLE = "Race Track";
+    /** Race track for this panel. */
+    private TrackPanel myPanel;
+    /** Leaderboard to display participants */
+    private Leaderboard myLeaderboard;
+    /** 
+     * Constructs a new view that listens to the passed in race.
+     * @param theRace the source of data for this display
+     */
+    public RaceView(final int theOffset, final int theVertical, final PropertyChangeEnabledRaceControls theRace) {
+        super(VIEW_TITLE);
+        this.setLocation(theOffset, theVertical);
+        initView();
+        theRace.addPropertyChangeListener(myLeaderboard);
+        theRace.addPropertyChangeListener(myPanel);
+    }
+    /**
+     * Initializes a the view for a race, until a file is loaded it will be mostly blank.
+     */
+    private void initView() {
+        myPanel = new TrackPanel();
+        myLeaderboard = new Leaderboard();
+        add(myLeaderboard, BorderLayout.EAST);
+        add(myPanel, BorderLayout.CENTER);
+        this.setVisible(true);
+        this.setResizable(false);
+        pack();
+    }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // TODO Auto-generated method stub
+        
+    }
+
+}

@@ -1,0 +1,53 @@
+/**
+ * 
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import controller.TimePanel;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_TIME;
+
+/**
+ * @author sterling
+ *
+ */
+public class StatusBar extends JPanel implements PropertyChangeListener {
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = -3362708020012797540L;
+    /** Displays the race time. */
+    private JLabel myTimeDisplay;
+    /**
+     * 
+     */
+    public StatusBar(final int theWidth) {
+        super();
+        setBorder(new EtchedBorder(EtchedBorder.RAISED));
+        myTimeDisplay = new JLabel(TimePanel.formatTime(0));
+        this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        add(myTimeDisplay);
+    }
+
+
+    /* (non-Javadoc)
+     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+     */
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+        if (theEvent.getPropertyName().contentEquals(PROPERTY_TIME)) {
+            myTimeDisplay.setText(TimePanel.formatTime((int) theEvent.getNewValue()));
+        }
+    }
+
+}

@@ -1,0 +1,13 @@
+package model;
+
+public abstract class AbstractMessage implements Message {
+    private int myTimeStamp;
+    public final int STRING_BUILDER_SIZE = 128;
+    public AbstractMessage(int theTimeStamp) {
+        myTimeStamp = theTimeStamp;
+    }
+    public int getTimeStamp() {
+        return myTimeStamp;
+    }
+
+}

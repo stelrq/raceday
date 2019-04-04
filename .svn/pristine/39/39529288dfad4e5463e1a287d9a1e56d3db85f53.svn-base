@@ -1,0 +1,56 @@
+/**
+ * 
+ */
+package view;
+
+import java.awt.Color;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Ellipse2D.Double;
+import java.util.Random;
+
+import javax.swing.JButton;
+
+/**
+ * @author sterling
+ *
+ */
+public class ParticipantView extends Double {
+
+    /**
+     * Groups together the elements that display information for a particular participant.
+     */
+
+    /** Stores the racer's color for display by the view. */
+    private final Color myColor;
+    /** Stores the name of the participant associated with this ParticipantView. */
+    private String myName;
+    
+    public ParticipantView(final Color theColor, final String theName) {
+        super();
+        myColor = theColor;
+        myName = theName;
+    }
+    
+//    /**
+//     * @param x
+//     * @param y
+//     * @param w
+//     * @param h
+//     */
+//    public ParticipantView(final double theX, final double theY,
+//        final double theWidth, final double theHeight) {
+//        super(theX, theY, theWidth, theHeight);
+//        myColor = randomColor();
+//    }
+
+    /**
+     * @return the myColor
+     */
+    public Color getColor() {
+        return myColor;
+    }
+    public String getName() {
+        return myName;
+    }
+
+}

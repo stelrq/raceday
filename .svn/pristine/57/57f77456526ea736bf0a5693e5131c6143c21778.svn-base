@@ -1,0 +1,29 @@
+package model;
+
+public class FinishMessage extends AbstractMessage implements Message {
+    int myRacerID;
+    int myLap;
+    boolean myFinish;
+    public FinishMessage(int theTimeStamp, int theRacerID, 
+                         int theLap, boolean theFinish) {
+        super(theTimeStamp);
+        myRacerID = theRacerID;
+        myLap = theLap;
+        myFinish = theFinish;
+    }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(STRING_BUILDER_SIZE);
+        sb.append("Finish Crossing Message at Time:");
+        sb.append(getTimeStamp());
+        sb.append(":Racer ID:");
+        sb.append(myRacerID);
+        sb.append(":Lap:");
+        sb.append(myLap);
+        sb.append(":Race Finished:");
+        sb.append(myFinish);
+        
+        return sb.toString();
+    }
+
+}

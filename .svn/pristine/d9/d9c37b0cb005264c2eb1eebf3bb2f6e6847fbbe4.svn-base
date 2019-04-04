@@ -1,0 +1,81 @@
+/**
+ * 
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import controller.TimePanel;
+import model.RaceModel;
+import model.TelemetryMessage;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_RACER_SELECTED;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_TIME;
+import static model.PropertyChangeEnabledRaceControls.PROPERTY_T_MESSAGE;
+
+/**
+ * @author sterling
+ *
+ */
+public class StatusBar extends JPanel implements PropertyChangeListener {
+    /**  
+     * A generated serial version UID for object Serialization. 
+     * http://docs.oracle.com/javase/7/docs/api/java/io/Serializable.html
+     */
+    private static final long serialVersionUID = -3362708020012797540L;
+    /** Displays the race time. */
+    private JLabel myTimeDisplay;
+    private JLabel myRacerDisplay;
+    /** The racer selected by the user. -1 if no racer is selected. */
+    private int myRacerSelected;
+    /** Name of the selected racer */
+    private String myNameSelected;
+    /**
+     * 
+     */
+    public StatusBar(final int theWidth) {
+        super();
+        setBorder(new EtchedBorder(EtchedBorder.RAISED));
+        myTimeDisplay = new JLabel(TimePanel.formatTime(0));
+        myRacerDisplay = new JLabel("Select a participant.");
+        this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        add(myRacerDisplay);
+        add(myTimeDisplay);
+        myRacerSelected = -1;
+    }
+    
+    protected void selectRacer(final int theRacerID, final String theName) {
+        myRacerSelected = theRacerID;
+        myNameSelected = theName;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+     */
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+        if (theEvent.getPropertyName().equals(PROPERTY_TIME)) {
+            myTimeDisplay.setText(TimePanel.formatTime((int) theEvent.getNewValue()));
+        } else if (theEvent.getPropertyName().equals(PROPERTY_T_MESSAGE)) {
+            TelemetryMessage tm = (TelemetryMessage) theEvent.getNewValue();
+            if (tm.getRacerID() == myRacerSelected) {
+                myRacerDisplay.setText(myNameSelected + tm.statusBarDisplay());
+            }
+        } else if (theEvent.getPropertyName().equals(PROPERTY_RACER_SELECTED)) {
+            myRacerSelected = Integer.parseInt(((String) theEvent.getNewValue()).split(RaceModel.DELIMITER_R)[0]);
+            myNameSelected = ((String) theEvent.getNewValue()).split(RaceModel.DELIMITER_R)[1];
+        }
+    }
+
+}

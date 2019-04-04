@@ -1,0 +1,421 @@
+package controller;
+import java.awt.BorderLayout;
+
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import model.FileHeader;
+import model.PropertyChangeEnabledRaceControls;
+import model.RaceModel;
+import view.RaceView;
+
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+
+public class RaceController extends JFrame implements PropertyChangeListener, ActionListener {
+    /**
+     * To fix warnings.
+     */
+    private static final long serialVersionUID = 4362685351329275803L;
+    /** Title for main control window. */
+    private static final String CONTROLLER_TITLE = "Race Day!";
+    /** Constructs new control window */
+//    /** Strings representing titles of each drop down */
+//    public static final String [] MENU_TITLES = {"File", "Controls", "Help"};
+    /** Strings representing default button image file names */
+//    private static final String [] DEFAULT_BUTTON_IMAGES =
+//        {"Restart", "Play", "One_times", "Repeat", "Clear"};
+    /** Number of actions that will enable when a file is successfully loaded. */
+    private static final int ACTION_COUNT = 6;
+    /** Message to be displayed on the about panel. */
+    private static final String ABOUT_MESSAGE =
+        "Sterling Quinn\nWinter 2019\nTCSS 305";
+    /** Title for Race Info popup. */
+    private static final String ABOUT_TITLE =
+                    "Race Day";
+    /** Title of image for window icon. */
+    private static final String WINDOW_ICON = "cyclist";
+    /** String for the restart button. */
+    private static final String RESTART_IMAGE = "Restart";
+    /** String for play button. */
+    private static final String PLAY_IMAGE = "Play";
+    /** String for standard speed button. */
+    private static final String ONE_TIMES_IMAGE = "One_times";
+    /** String representing pause button. */
+    private static final String REPEAT_IMAGE = "Repeat";
+    /** String representing clear button. */
+    private static final String CLEAR_IMAGE = "Clear";
+    /** String representing the pause button. */
+    private static final String PAUSE_IMAGE = "Pause";
+    /** String representing the 4 times speed button. */
+    private static final String FOUR_TIMES_IMAGE = "Four_times";
+    /** String representing the loop race selected button. */
+    private static final String REPEAT_SELECTED_IMAGE = "Repeat_Color";
+    /** String representing the text for the speed modifier button
+     * in the initial state.
+     */
+    private static final String ONE_TIMES_TEXT = "Times One";
+    /** String representing the text for the speed modifier in the 
+     * switched state.
+     */
+    private static final String FOUR_TIMES_TEXT = "Times Four";
+    /** String representing the text for the loop race button
+     * in the initial state.
+     */
+    private static final String SINGLE_RACE = "Single Race";
+    /** String representing the text for the loop race button
+     * in the switched state.
+     */
+    private static final String LOOP_RACE = "Loop Race";
+    /** Size of control buttons on toolbar. */
+    protected static final int CONTROL_BUTTON_SIZE = 24;
+    /** Size of control menu icons */
+    protected static final int MENU_ICON_SIZE = 12;
+    /** Size of the window icon. */
+    private static final int WINDOW_ICON_SIZE = 12;            // TODO Auto-generated method stub
+    /** Controls borders around components. */
+    public static final int PADDING = 10;
+    /** Amount of milliseconds between each call to the timer. */
+    private static final int TIMER_FREQUENCY = 31; 
+    /** File chooser to load race file. */
+    public static final JFileChooser FILE_CHOOSER = new JFileChooser(".");
+    /** Controls the multiplier for fast race speed. */
+    private static final int RACE_MULTIPLIER = 4;
+    /** Slider that controls race time. */
+    private JSlider mySlider;
+    /** Menu bar for dropdown menus at the top of the window. */
+    private JMenuBar myMenuBar;
+    /** Toolbar that contains the controls for the race. */
+    private JToolBar myToolBar;
+    /** Tabbed pane for the data and racer areas. */
+    private JTabbedPane myTabbedPane;
+    /** File menu. */
+    private JMenu myFileMenu;
+    /** Control menu. */
+    private JMenu myControlMenu;
+    /** Help menu. */
+    private JMenu myHelpMenu;
+    /** Panel to display current race time. */
+    private  TimePanel myTimePanel;
+    /** Timer to control how often to advance the race time. */
+    private Timer myTimer;
+    /** File the user loads in for this race. */
+    private File myRaceFile;
+    /** The model for this controller. */
+    private PropertyChangeEnabledRaceControls myRace = new RaceModel();
+    /** Multiplier that controls timer speed. */
+    private int myMultiplier;
+    /** List of Actions to control race behaviors. */
+    private ActionGroup  myActions;
+    /** Controls if the race loops when the time runs out. */
+    private boolean myLoopSelected;
+    /** Stores the header information. */
+    private FileHeader myFileHeader;
+
+    public RaceController() {
+        super(CONTROLLER_TITLE);
+        myLoopSelected =  false;
+        myActions = new ActionGroup();
+        initializeActions();
+        initController();
+        this.setVisible(true);
+        this.setResizable(false);
+    }
+    /**
+     * Method to start the race timer and disable the slider.
+     */
+    private void startRace() {
+        myTimer.start();
+        mySlider.setEnabled(false);
+    }
+    /**
+     * Method to pause race and enable slider.
+     */
+    private void pauseRace() {
+        myTimer.stop();
+        mySlider.setEnabled(true);
+    }
+    /**
+     * Initializes actions for the control buttons.
+     */
+    private void initializeActions() {
+        final Runnable restart = () -> myRace.moveTo(0);
+        myActions.addAction(new RaceAction(RESTART_IMAGE, RESTART_IMAGE, restart));
+        final Runnable start = () -> startRace();
+        final Runnable pause = () -> pauseRace();
+        myActions.addAction
+           (new ToggleRaceAction(PLAY_IMAGE, PAUSE_IMAGE,
+                PLAY_IMAGE, PAUSE_IMAGE, start, pause));
+        final Runnable speedUp = () -> myMultiplier = RACE_MULTIPLIER;
+        final Runnable slowDown = () -> myMultiplier = 1;
+        myActions.addAction
+        (new ToggleRaceAction(ONE_TIMES_IMAGE, FOUR_TIMES_IMAGE,
+            ONE_TIMES_TEXT, FOUR_TIMES_TEXT,
+                 speedUp, slowDown));
+        final Runnable loopRace = () -> myLoopSelected = true;
+        final Runnable singleRace = () -> myLoopSelected = false;
+        myActions.addAction
+            (new ToggleRaceAction(REPEAT_IMAGE, REPEAT_SELECTED_IMAGE,
+                 SINGLE_RACE, LOOP_RACE, loopRace, singleRace));
+        final Runnable clear = () -> ((RaceTabbedPane) myTabbedPane).clearData();
+        myActions.addAction(new RaceAction(CLEAR_IMAGE, CLEAR_IMAGE, clear));
+    }
+    /**
+     * Adds the appropriate property change listeners to this controller's race model.
+     */
+    private void addRacePcls() {
+        myRace.addPropertyChangeListener((RaceSlider) mySlider);
+        myRace.addPropertyChangeListener
+            (model.PropertyChangeEnabledRaceControls.PROPERTY_TIME, myTimePanel);
+        myRace.addPropertyChangeListener
+            (PropertyChangeEnabledRaceControls.PROPERTY_RACE_FINISHED, myTimePanel);
+        myRace.addPropertyChangeListener((RaceTabbedPane) myTabbedPane);
+        myRace.addPropertyChangeListener
+            (PropertyChangeEnabledRaceControls.PROPERTY_RACE_LOADED, myActions);
+        myRace.addPropertyChangeListener
+        (PropertyChangeEnabledRaceControls.PROPERTY_HEADER_LOADED, this);
+        myRace.addPropertyChangeListener
+        (PropertyChangeEnabledRaceControls.PROPERTY_RACE_FINISHED, this);
+        
+    }
+    /**
+     * Aggregates the components for the controller into a single frame.
+     */
+    private void initController() {
+        myMultiplier = 1;
+        myTimer = new Timer(TIMER_FREQUENCY, this::handleTimer);
+        final Container masterPanel = new JPanel(new BorderLayout());
+        setIcon(WINDOW_ICON);
+        mySlider = new RaceSlider();
+        mySlider.addChangeListener((RaceModel) myRace); 
+        masterPanel.add(mySlider, BorderLayout.CENTER);
+        myTimePanel = new TimePanel(new Dimension(19, 19));
+        masterPanel.add(myTimePanel, BorderLayout.EAST);
+        myTabbedPane = new RaceTabbedPane();
+        myTabbedPane.addChangeListener((RaceModel) myRace);
+        masterPanel.add(myTabbedPane, BorderLayout.SOUTH);
+        add(masterPanel, BorderLayout.CENTER);
+        myToolBar = buildToolBar();
+        add(myToolBar, BorderLayout.SOUTH);
+        myMenuBar = buildMenuBar();
+        setJMenuBar(myMenuBar);
+        addRacePcls();
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        new RaceView(this.getX() + this.getWidth(), this.getY(), myRace);
+    }
+    /**
+     * Sets the icon for the window.
+     * @param theImage name of the image to be used
+     */
+    private void setIcon(final String theImage) {
+        final ImageIcon icon = new ImageIcon(buildImage(theImage, WINDOW_ICON_SIZE));
+        this.setIconImage(icon.getImage());
+    }
+    
+    /**
+     * Builds a menu bar with file, control and help dropdown menus.
+     * @return a menu bar with three sub menus.
+     */
+    private JMenuBar buildMenuBar() {
+        final JMenuBar menuBar = new JMenuBar();
+        menuBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        fillButtons(this);
+        menuBar.add(myFileMenu);
+        menuBar.add(myControlMenu);
+        menuBar.add(myHelpMenu); 
+        return menuBar;
+    }
+
+    /**
+     * Build tool bar with controls for race.
+     * @return a tool bar with race commands 
+     */
+    private JToolBar buildToolBar() {
+        final JToolBar toolBar = new JToolBar();
+        for (final Action a : myActions.getActionList()) {
+            final JButton button = new JButton(a);
+            button.setHideActionText(true);
+            toolBar.add(button);
+        }
+        return toolBar;
+    }
+    /**
+     * Fills all menus.
+     */
+    private void fillButtons(final JFrame theFrame) {
+        myFileMenu = new JMenu("File");
+        final JMenuItem fileLoad = new JMenuItem("Load Race...");
+        fileLoad.addActionListener(this::handleFileClicked);
+        final JMenuItem exit =  new JMenuItem("Exit");
+        exit.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(final ActionEvent theEvent) {
+                theFrame.dispatchEvent(new WindowEvent(theFrame, WindowEvent.WINDOW_CLOSING));
+            }
+        }); //@author cfb3
+        
+        myFileMenu.add(fileLoad);
+        myFileMenu.addSeparator();
+        myFileMenu.add(exit);
+        myControlMenu = new JMenu("Controls");
+        for (Action a : myActions.getActionList()) {
+            final JMenuItem item = new JMenuItem(a);
+            myControlMenu.add(item);
+        }
+        final Runnable help = () -> JOptionPane.showMessageDialog
+            (this, myFileHeader.toString(), "Track Simulation", JOptionPane.INFORMATION_MESSAGE);
+        Action helpAction = new RaceAction("Race Info...", help);
+        myActions.addAction(helpAction);
+        myHelpMenu = new JMenu("Help");
+        final JMenuItem raceInfo = new JMenuItem(helpAction);
+        final JMenuItem about =  new JMenuItem("About...");
+        about.addActionListener(a -> JOptionPane.showMessageDialog
+            (this, ABOUT_MESSAGE, ABOUT_TITLE, JOptionPane.INFORMATION_MESSAGE,
+                new ImageIcon(buildImage(WINDOW_ICON, WINDOW_ICON_SIZE))));
+        myHelpMenu.add(raceInfo);
+        myHelpMenu.add(about);
+        
+    }
+
+    
+    /**
+     * Method that opens a new FileChooser window.
+     * @param theEvent the action event that opens the window
+     */
+    private void handleFileClicked(final ActionEvent theEvent) {
+        final int chosen = FILE_CHOOSER.showOpenDialog(this);
+        if (chosen == JFileChooser.APPROVE_OPTION) {
+            myRaceFile = FILE_CHOOSER.getSelectedFile();
+            try {
+                myRace.loadRace(myRaceFile);
+            } catch (final IOException e) {
+                JOptionPane.showMessageDialog
+                    (FILE_CHOOSER, "Erorr loading file.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * Builds an ImageIcon from an images contained in the images folder.
+     * Image file name must be in the form ic_+"button_name"+.png.
+     * @param theImage the title of the image
+     * @param theSize the size of the image 
+     */
+    protected static Image buildImage(final String theImage, final int theSize) {
+        final StringBuilder sb = new StringBuilder(128);
+        sb.append("images/ic_");
+        sb.append(theImage.toLowerCase());
+        sb.append(".png");
+        return new ImageIcon(sb.toString()).getImage().
+                        getScaledInstance(theSize,
+                                          theSize, java.awt.Image.SCALE_SMOOTH);
+    }
+
+    /**
+     * Event handler for the timer. 
+     * @param theEvent the fired event
+     */
+    private void handleTimer(final ActionEvent theEvent) { //NOPMD
+        myRace.advance(TIMER_FREQUENCY * myMultiplier);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+    /**
+     * Packages actions in to a group that is a property change listener 
+     * so that they may enable when the PROPERTY_RACE_LOADED 
+     * property is received from the model.
+     * @author stelrq
+     * @version Winter 2019
+     *
+     */
+    private class ActionGroup implements PropertyChangeListener {
+        /** List of the actions contained in this action group. */
+        private List<Action> myActionGroup;
+        /**
+         * Constructs a new action group.
+         * @param theActionCount the number of actions for this controller
+         */
+        public ActionGroup() {
+            myActionGroup = new ArrayList<Action>(ACTION_COUNT);
+        }
+        /**
+         * Adds an action to the end of the list of actions.
+         * @param theAction
+         */
+        public void addAction(final Action theAction) {
+            myActionGroup.add(theAction);
+        }
+        public List<Action> getActionList() {
+            return myActionGroup;
+        }
+        /**
+         * Enables the buttons in this action group.
+         * @param theEvent event notifying that the file has loaded
+         */
+        @Override
+        public void propertyChange(PropertyChangeEvent theEvent) {
+            for (Action a : myActionGroup) {
+                a.setEnabled(true);
+            }
+        }
+        
+    }
+    @Override
+    public void propertyChange(final PropertyChangeEvent theEvent) {
+        if (PropertyChangeEnabledRaceControls.
+            PROPERTY_RACE_FINISHED.equals(theEvent.getPropertyName())) {
+            if (myLoopSelected) {
+                myRace.moveTo(0);
+            } else {
+                myTimer.stop();
+            }
+        } else if (PropertyChangeEnabledRaceControls.
+            PROPERTY_HEADER_LOADED.equals(theEvent.getPropertyName())) {
+            myFileHeader = (FileHeader) theEvent.getNewValue();
+        }
+        
+    }
+    
+
+}
